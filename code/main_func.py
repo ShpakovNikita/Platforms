@@ -4,13 +4,13 @@
 import pygame
 from Character import*
 from pygame import*
-from Block import*
+from Blocks import*
 from Camera import*
 
 WIDTH = 800
 LENGTH = 640
 SCREEN = (WIDTH, LENGTH)
-BACKGROUND_COLOR = "#004400"
+BACKGROUND_COLOR = "#000000"
 
 
 def main():
@@ -20,12 +20,17 @@ def main():
     background = Surface(SCREEN)
     hero = Character(55, 55)
     entities = pygame.sprite.Group()
+    animatedEntities = pygame.sprite.Group()
     platforms = []
     entities.add(hero)
+    tp = BlockTeleport(128, 512, 800, 64)
+    entities.add(tp)
+    platforms.append(tp)
+    animatedEntities.add(tp)
 
     level = [
         "-----------------------------------",
-        "-                                 -",
+        "-                ***              -",
         "-                         -----   -",
         "-                                 -",
         "-            --                   -",
@@ -34,18 +39,18 @@ def main():
         "-                                 -",
         "-        -----                    -",
         "--                                -",
-        "-                                 -",
+        "-               **                -",
         "-                ------           -",
         "-                                 -",
         "-                                 -",
         "-      -------                    -",
         "-                                 -",
         "-                                 -",
-        "-                                 -",
+        "-                       *         -",
         "-                ---              -",
         "-                             --- -",
         "-         ----                    -",
-        "-                                 -",
+        "-                      ***        -",
         "-----------------------------------"]
 
     total_level_width = len(level[0]) * BLOCK_WIDTH
@@ -64,6 +69,10 @@ def main():
                 block = Block(x, y)
                 entities.add(block)
                 platforms.append(block)
+            if element == "*":
+                blockd = DeathBlock(x, y)
+                entities.add(blockd)
+                platforms.append(blockd)
 
             x += BLOCK_WIDTH
 
@@ -93,6 +102,7 @@ def main():
             if e.type == KEYUP and e.key == K_LSHIFT:
                 shift = False
         screen.blit(background, (0, 0))
+        animatedEntities.update()
         hero.update(left, right, up, shift, platforms)
         camera.update(hero)
         for e in entities:

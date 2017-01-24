@@ -4,6 +4,7 @@
 from pygame import *
 import os
 import pyganim
+import Blocks
 
 MOVE_SPEED = 7
 WIDTH_CH = 22
@@ -12,6 +13,7 @@ JUMP_POWER = 10
 GRAVITY = 0.35
 ICON_DIR = os.path.dirname(__file__)
 ANIMATION_DELAY = 0.1
+SUPER_SPEED_ANIMATION_DELAY = 0.05
 COLOR = "#888888"
 ANIMATION_RIGTH = [("%s/sprites/r1.png" % ICON_DIR),
                    ("%s/sprites/r2.png" % ICON_DIR),
@@ -51,10 +53,22 @@ class Character(sprite.Sprite):
         self.AnimRight.play()
 
         Animation = []
+        for anim in ANIMATION_RIGTH:
+            Animation.append((anim, SUPER_SPEED_ANIMATION_DELAY))
+        self.AnimSuperRight = pyganim.PygAnimation(Animation)
+        self.AnimSuperRight.play()
+
+        Animation = []
         for anim in ANIMATION_LEFT:
             Animation.append((anim, ANIMATION_DELAY))
         self.AnimLeft = pyganim.PygAnimation(Animation)
         self.AnimLeft.play()
+
+        Animation = []
+        for anim in ANIMATION_LEFT:
+            Animation.append((anim, SUPER_SPEED_ANIMATION_DELAY))
+        self.AnimSuperLeft = pyganim.PygAnimation(Animation)
+        self.AnimSuperLeft.play()
 
         self.AnimStay = pyganim.PygAnimation(ANIMATION_STAY)
         self.AnimStay.play()
@@ -90,7 +104,7 @@ class Character(sprite.Sprite):
             if up:
                 self.AnimJumpLeft.blit(self.image, (0, 0))
             else:
-                self.AnimLeft.blit(self.image, (0, 0))
+                self.AnimSuperLeft.blit(self.image, (0, 0))
 
         if right:
             self.xvel = MOVE_SPEED
@@ -106,7 +120,7 @@ class Character(sprite.Sprite):
             if up:
                 self.AnimJumpRight.blit(self.image, (0, 0))
             else:
-                self.AnimRight.blit(self.image, (0, 0))
+                self.AnimSuperRight.blit(self.image, (0, 0))
 
         if not (left or right):
             self.xvel = 0
@@ -127,19 +141,37 @@ class Character(sprite.Sprite):
 
     def collide(self, xvel, yvel, platforms):
         for p in platforms:
+
             if sprite.collide_rect(self, p):
-                if xvel > 0:
-                    self.rect.right = p.rect.left
 
-                if xvel < 0:
-                    self.rect.left = p.rect.right
+                if isinstance(p, Blocks.DeathBlock):
+                    self.death()
 
-                if yvel > 0:
-                    self.rect.bottom = p.rect.top
-                    self.onGround = True
-                    self.yvel = 0
+                elif isinstance(p, Blocks.BlockTeleport):
+                    self.teleportating(p.goX, p.goY)
 
-                if yvel < 0:
-                    self.rect.top = p.rect.bottom
-                    self.yvel = 0
+                else:
 
+                    if xvel > 0:
+                        self.rect.right = p.rect.left
+
+                    if xvel < 0:
+                        self.rect.left = p.rect.right
+
+                    if yvel > 0:
+                        self.rect.bottom = p.rect.top
+                        self.onGround = True
+                        self.yvel = 0
+
+                    if yvel < 0:
+                        self.rect.top = p.rect.bottom
+                        self.yvel = 0
+
+    def death(self):
+        self.AnimStay.blit(self.image, (0, 0))
+        time.wait(500)
+        self.teleportating(self.startX, self.startY)
+
+    def teleportating(self, goX, goY):
+        self.rect.x = goX
+        self.rect.y = goY
