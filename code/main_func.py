@@ -10,8 +10,7 @@ from Camera import*
 WIDTH = 800
 LENGTH = 640
 SCREEN = (WIDTH, LENGTH)
-BACKGROUND_COLOR = "#000000"
-
+BACKGROUND_COLOR = "#004400"
 
 def main():
     pygame.init()
@@ -23,44 +22,56 @@ def main():
     animatedEntities = pygame.sprite.Group()
     platforms = []
     entities.add(hero)
-    tp = BlockTeleport(128, 512, 800, 64)
-    entities.add(tp)
-    platforms.append(tp)
-    animatedEntities.add(tp)
+    tp1 = BlockTeleport(128, 512, 800, 64)
+    tp2 = BlockTeleport(672, 128, 128, 128)
+    entities.add(tp1)
+    platforms.append(tp1)
+    animatedEntities.add(tp1)
+    entities.add(tp2)
+    platforms.append(tp2)
+    animatedEntities.add(tp2)
 
     level = [
-        "-----------------------------------",
-        "-                ***              -",
-        "-                         -----   -",
-        "-                                 -",
-        "-            --                   -",
-        "-                                 -",
-        "-                         -----   -",
-        "-                                 -",
-        "-        -----                    -",
-        "--                                -",
-        "-               **                -",
-        "-                ------           -",
-        "-                                 -",
-        "-                                 -",
-        "-      -------                    -",
-        "-                                 -",
-        "-                                 -",
-        "-                       *         -",
-        "-                ---              -",
-        "-                             --- -",
-        "-         ----                    -",
-        "-                      ***        -",
-        "-----------------------------------"]
+        "+++++++++++++++++++++++++++++++++++",
+        "+                          ***    +",
+        "+                         -----   +",
+        "+                                 +",
+        "+            --                   +",
+        "+                                 +",
+        "+                         -----   +",
+        "+                                 +",
+        "+        -----                    +",
+        "+-                                +",
+        "+                * **             +",
+        "+                ------           +",
+        "+                                 +",
+        "+         ***                     +",
+        "+      -------                    +",
+        "+                                 +",
+        "+                                 +",
+        "+                                 +",
+        "+                ---              +",
+        "+           **                --- +",
+        "+         ----                    +",
+        "+                      ***        +",
+        "+---------------------------------+"]
 
     total_level_width = len(level[0]) * BLOCK_WIDTH
     total_level_height = len(level) * BLOCK_HEIGHT
 
     camera = Camera(camera_configure, total_level_width, total_level_height)
-
     timer = pygame.time.Clock()
     left = right = up = shift = False
-    background.fill(Color(BACKGROUND_COLOR))
+    x = 0
+    y = 0
+    for cow in level:
+        for i in cow:
+            back = Surface((BLOCK_WIDTH * 2, BLOCK_HEIGHT * 2))
+            back = image.load("%s\sprites\Background.png" % ICON_DIR)
+            background.blit(back, (x, y))
+            x +=  BLOCK_WIDTH * 2
+        y += BLOCK_HEIGHT * 2
+        x = 0
     x = 0
     y = 0
     for cow in level:
@@ -70,14 +81,19 @@ def main():
                 entities.add(block)
                 platforms.append(block)
             if element == "*":
-                blockd = DeathBlock(x, y)
-                entities.add(blockd)
-                platforms.append(blockd)
+                block = DeathBlock(x, y)
+                entities.add(block)
+                platforms.append(block)
+            if element == "+":
+                block = Wall(x, y)
+                entities.add(block)
+                platforms.append(block)
 
             x += BLOCK_WIDTH
 
         y += BLOCK_HEIGHT
         x = 0
+
 
     while 1:
         timer.tick(60)
